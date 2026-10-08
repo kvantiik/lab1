@@ -3,32 +3,20 @@
 #include <list>
 #include <fstream>
 
-bool cmp(std::pair<std::string, int> x, std::pair<std::string, int> y){
-    return x.second > y.second;
-}
-
-int main(int argc, char* argv[]) {
-
-    std::string inp = argv[1];
-    std::string outp = argv[2];
-    std::ifstream input(inp);
-
-    std::string line;
+class WordFreq {
+private:
     std::map<std::string, int> wordFreq;
-    int  count = 0;
+    int count = 0;
 
-    while (std::getline(input, line)) {
-
-        std::string word = "";
+    void parseLine(std::string line) {
+        std::string word;
 
         for (int i = 0; i < line.length(); i++) {
             char let = line[i];
 
             if ((let >= 'a' && let <= 'z') || (let >= 'A' && let <= 'Z') || (let >= '0' && let <= '9')) {
                 word += let;
-            }
-
-            else {
+            } else {
                 if (!word.empty()) {
                     wordFreq[word]++;
                     count++;
@@ -43,24 +31,47 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    input.close();
-
-    std::list<std::pair<std::string, int>> sort_freq;
-
-    for (auto it : wordFreq) {
-         sort_freq.push_back(it);
+public:
+    void checkFrequency(std::string inp) {
+        std::ifstream input(inp);
+        std::string line;
+        while (std::getline(input, line)) {
+            parseLine(line);
+        }
+        input.close();
     }
 
-    sort_freq.sort(cmp);
+    void printFrequency(std::string outp) {
+        std::list<std::pair<std::string, int> > sort_freq;
 
-    std::ofstream output(outp);
+        for (auto it: wordFreq) {
+            sort_freq.push_back(it);
+        }
 
-    for (auto it :  sort_freq) {
-        double p = (double)it.second / count * 100;
-        output << it.first <<  "," << it.second << "," << p << "\n";
+        sort_freq.sort([](std::pair<std::string, int> x, std::pair<std::string, int> y) {
+            return x.second > y.second;
+        });
+
+
+        std::ofstream output(outp);
+
+        for (auto it: sort_freq) {
+            double p = (double) it.second / count * 100;
+            output << it.first << "," << it.second << "," << p << "\n";
+        }
+
+        output.close();
     }
+};
 
-    output.close();
+
+int main(int argc, char *argv[]) {
+    std::string inp = argv[1];
+    std::string outp = argv[2];
+
+    WordFreq wf;
+    wf.checkFrequency(inp);
+    wf.printFrequency(outp);
 
     return 0;
 }
